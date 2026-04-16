@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Touch Operaciones</title>
+<style>
+:root{--bg:#f4f6f8;--card:#fff;--text:#1f2937;--muted:#6b7280;--line:#e5e7eb;--primary:#111827;--accent:#2563eb;--ok:#16a34a;--warn:#d97706;--bad:#dc2626;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);font-size:14px;}
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;}
+.login-box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:36px 32px;width:100%;max-width:360px;box-shadow:0 4px 24px rgba(0,0,0,.07);}
+.login-box h2{font-size:20px;margin-bottom:4px;}
+.login-box p{font-size:13px;color:var(--muted);margin-bottom:24px;}
+.login-box label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;margin-top:14px;}
+.login-box input{width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;}
+.btn-login{margin-top:20px;width:100%;padding:11px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer;}
+.login-error{margin-top:10px;font-size:13px;color:var(--bad);text-align:center;display:none;}
+.login-hint{margin-top:16px;font-size:12px;color:var(--muted);text-align:center;line-height:1.8;}
+.topbar{background:var(--primary);color:#fff;padding:13px 22px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
+.topbar h1{font-size:18px;font-weight:700;}
+.role-pill{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;}
+.pill-kam{background:#d1fae5;color:#065f46;}.pill-equipo{background:#dbeafe;color:#1e40af;}.pill-cliente{background:#ede9fe;color:#4c1d95;}
+.btn-out{background:transparent;border:1px solid rgba(255,255,255,.3);color:#fff;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:13px;}
+.nav{background:#fff;border-bottom:1px solid var(--line);padding:0 22px;display:flex;gap:2px;overflow-x:auto;}
+.nav-btn{padding:12px 15px;background:transparent;border:none;border-bottom:2px solid transparent;cursor:pointer;font-size:13px;color:var(--muted);white-space:nowrap;}
+.nav-btn.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600;}
+.main{padding:20px;max-width:1400px;margin:0 auto;}
+.page{display:none;}.page.active{display:block;}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:16px;}
+.card h3{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:14px;}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px;margin-bottom:16px;}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:15px;}
+.kpi .k-label{font-size:12px;color:var(--muted);margin-bottom:5px;}
+.kpi .k-value{font-size:22px;font-weight:700;}
+.ok{color:var(--ok);}.warn{color:var(--warn);}.bad{color:var(--bad);}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+@media(max-width:860px){.two-col{grid-template-columns:1fr;}}
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;}
+td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#f9fafb;}
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700;}
+.badge.ok{background:#dcfce7;color:#166534;}.badge.warn{background:#fef3c7;color:#92400e;}.badge.bad{background:#fee2e2;color:#991b1b;}.badge.gray{background:#f3f4f6;color:#6b7280;}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;margin-bottom:14px;}
+.fg label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;}
+.fg input,.fg select{width:100%;padding:9px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;background:#fff;}
+.btn-primary{padding:9px 18px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;}
+.btn-danger{padding:5px 11px;background:transparent;border:1px solid #fca5a5;color:var(--bad);border-radius:7px;font-size:12px;cursor:pointer;}
+.loader{display:flex;align-items:center;gap:8px;padding:16px 0;color:var(--muted);font-size:13px;}
+.spinner{width:15px;height:15px;border:2px solid #e5e7eb;border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.msg-ok{font-size:13px;color:var(--ok);margin-top:8px;display:none;}
+.msg-err{font-size:13px;color:var(--bad);margin-top:8px;display:none;}
+.sf{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:16px;}
+.sf .fg{min-width:160px;}
+.prog-wrap{background:#f3f4f6;border-radius:4px;height:6px;overflow:hidden;width:80px;display:inline-block;vertical-align:middle;margin-right:5px;}
+.prog-bar{height:100%;border-radius:4px;}
+.hidden{display:none!important;}
+.chart-box{position:relative;width:100%;}
+
+.meta-step{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:12px;}
+.meta-step-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.step-num{width:28px;height:28px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+.step-title{font-size:14px;font-weight:700;color:var(--text);}
+.step-desc{font-size:12px;color:var(--muted);margin-top:2px;}
+.result-box{border-radius:12px;padding:20px;margin-bottom:12px;border:1px solid var(--line);}
+.result-box.suggested{background:#f0fdf4;border-color:#86efac;}
+.result-box.conservative{background:#eff6ff;border-color:#93c5fd;}
+.result-box.ambitious{background:#fef3c7;border-color:#fcd34d;}
+.result-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
+.result-amount{font-size:28px;font-weight:700;}
+.result-sub{font-size:12px;color:var(--muted);margin-top:4px;}
+.factor-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px;}
+.factor-row:last-child{border-bottom:none;}
+.factor-name{color:var(--muted);}
+.factor-val{font-weight:700;}
+.factor-val.up{color:var(--ok);}
+.factor-val.down{color:var(--bad);}
+.factor-val.neutral{color:var(--text);}
+.vs-10{background:#f9fafb;border:1px solid var(--line);border-radius:8px;padding:12px 16px;font-size:13px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.range-wrap{display:flex;align-items:center;gap:10px;}
+.range-wrap input[type=range]{flex:1;}
+.range-val{font-size:13px;font-weight:700;min-width:48px;text-align:right;}
+.guardar-meta-btn{margin-top:8px;}
+
+</style>
+</head>
+<body>
+
+<div class="login-wrap" id="loginWrap">
+  <div class="login-box">
+    <h2>Touch Operaciones</h2><p>Gestión comercial · KAM</p>
+    <label>Usuario</label><input type="text" id="lu" placeholder="usuario" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <label>Contraseña</label><input type="password" id="lp" placeholder="••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <button class="btn-login" onclick="doLogin()">Ingresar</button>
+    <div class="login-error" id="lerr"></div>
+    <div class="login-hint">mariano/kam123 · equipo/equipo123<br>gnomo/gnomo123 · trauko/trauko123 · hites/hites123</div>
+  </div>
+</div>
+
+<div id="appWrap" class="hidden">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px;"><h1>Touch Operaciones</h1><span class="role-pill" id="rpill"></span></div>
+    <div style="display:flex;align-items:center;gap:10px;"><span id="ulab" style="font-size:13px;opacity:.7;"></span><button class="btn-out" onclick="doLogout()">Salir</button></div>
+  </div>
+
+  <!-- KAM NAV -->
+  <div class="nav hidden" id="navKam">
+    <button class="nav-btn active" onclick="kTab('tabRes',this)">Resumen</button>
+    <button class="nav-btn" onclick="kTab('tabTiendas',this)">Tiendas</button>
+    <button class="nav-btn kam-only" onclick="kTab('tabCarga',this)">Carga mensual</button>
+    <button class="nav-btn" onclick="kTab('tabRoi',this)">ROI</button>
+    <button class="nav-btn" onclick="kTab('tabProy',this)">Proyección</button>
+    <button class="nav-btn" onclick="kTab('tabHist',this)">Historial</button>
+    <button class="nav-btn" onclick="kTab('tabMeta',this)">Calcular meta</button>
+  </div>
+
+  <!-- CLIENTE NAV -->
+  <div class="nav hidden" id="navCl">
+    <button class="nav-btn active" onclick="cTab('tabClDatos',this)">Mis datos</button>
+    <button class="nav-btn" onclick="cTab('tabClTiendas',this)">Mis tiendas</button>
+    <button class="nav-btn" onclick="cTab('tabClRoi',this)">Mi ROI</button>
+    <button class="nav-btn" onclick="cTab('tabClProy',this)">Proyección</button>
+  </div>
+
+  <div class="main">
+
+    <!-- RESUMEN -->
+    <div class="page active" id="tabRes">
+      <div class="sf">
+        <div class="fg"><label>Cliente</label><select id="rCli" onchange="loadRes()"></select></div>
+        <div class="fg"><label>Año</label><select id="rAnio" onchange="loadRes()"><option value="2024">2024</option><option value="2025" selected>2025</option><option value="2026">2026</option></select></div>
+      </div>
+      <div id="rLoad" class="loader"><div class="spinner"></div>Cargando...</div>
+      <div id="rCont" class="hidden">
+        <div class="kpi-grid" id="rKpis"></div>
+        <div class="two-col">
+          <div class="card"><h3>Cumplimiento por tienda</h3><div class="chart-box" style="height:300px"><canvas id="cTiendas" role="img" aria-label="Cumplimiento por tienda">Cumplimiento tiendas.</canvas></div></div>
+          <div class="card"><h3>Ventas vs meta mensual</h3><div class="chart-box" style="height:300px"><canvas id="cVentas" role="img" aria-label="Ventas vs meta">Ventas vs meta.</canvas></div></div>
+        </div>
+        <div class="two-col">
+          <div class="card"><h3>Detalle mensual</h3><div class="tbl-wrap"><table><thead><tr><th>Mes</th><th>Ventas</th><th>Meta</th><th>Cumplim.</th><th>Brecha</th><th>Estado</th></tr></thead><tbody id="rTabMes"></tbody></table></div></div>
+          <div class="card"><h3>Ranking tiendas</h3><div class="tbl-wrap"><table><thead><tr><th>Tienda</th><th>Ventas</th><th>Meta</th><th>Cumplim.</th><th>Estado</th></tr></thead><tbody id="rTabTiendas"></tbody></table></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIENDAS -->
+    <div class="page hidden" id="tabTiendas">
+      <div class="sf">
+        <div class="fg"><label>Cliente</label><select id="tCli" onchange="loadTiendas()"></select></div>
+        <div class="fg"><label>Año</label><select id="tAnio" onchange="loadTiendas()"><option value="2024">2024</option><option value="2025" selected>2025</option><option value="2026">2026</option></select></div>
+      </div>
+      <div id="tFormAdd" class="card kam-only">
+        <h3>Agregar tienda</h3>
+        <div class="form-grid">
+          <div class="fg"><label>Nombre</label><input type="text" id="taNom" placeholder="Ej: Gnomo Costanera"/></div>
+          <div class="fg"><label>Comuna</label><input type="text" id="taCom" placeholder="Ej: Las Condes"/></div>
+          <div class="fg"><label>Promotores</label><input type="number" id="taPro" placeholder="1"/></div>
+          <div class="fg"><label>Meta mensual ($)</label><input type="number" id="taMet" placeholder="600000"/></div>
+        </div>
+        <button class="btn-primary" onclick="addTienda()">Agregar tienda</button>
+        <div class="msg-ok" id="taOk">Tienda agregada en Sheets</div>
+      </div>
+      <div id="tLoad" class="loader"><div class="spinner"></div>Cargando tiendas...</div>
+      <div id="tCont" class="hidden">
+        <div class="kpi-grid" id="tKpis"></div>
+        <div class="card"><h3>Cumplimiento por tienda</h3><div class="chart-box" style="height:400px"><canvas id="cTBar" role="img" aria-label="Cumplimiento tiendas">Cumplimiento.</canvas></div></div>
+        <div class="card"><h3>Detalle por tienda</h3><div class="tbl-wrap"><table><thead><tr><th>Tienda</th><th>Comuna</th><th>Prom.</th><th>Meta/mes</th><th>Ventas acum.</th><th>Cumplim.</th><th>Estado</th><th></th></tr></thead><tbody id="tTab"></tbody></table></div></div>
+        <div class="card kam-only">
+          <h3>Carga por tienda</h3>
+          <div class="form-grid">
+            <div class="fg"><label>Tienda</label><select id="ctT" onchange="preCargaTienda()"></select></div>
+            <div class="fg"><label>Mes</label><select id="ctM" onchange="preCargaTienda()"><option value="0">Enero</option><option value="1">Febrero</option><option value="2">Marzo</option><option value="3">Abril</option><option value="4">Mayo</option><option value="5">Junio</option><option value="6">Julio</option><option value="7">Agosto</option><option value="8">Septiembre</option><option value="9">Octubre</option><option value="10">Noviembre</option><option value="11">Diciembre</option></select></div>
+            <div class="fg"><label>Ventas ($)</label><input type="number" id="ctV" placeholder="0"/></div>
+            <div class="fg"><label>Meta ($)</label><input type="number" id="ctMe" placeholder="0"/></div>
+            
+            <div class="fg"><label>Costo real ($)</label><input type="number" id="ctC" placeholder="0"/></div>
+          </div>
+          <button class="btn-primary" onclick="guardarMesTienda()">Guardar en Sheets</button>
+          <div id="ctLoad" class="loader hidden"><div class="spinner"></div>Guardando...</div>
+          <div class="msg-ok" id="ctOk">Guardado correctamente</div>
+          <div class="msg-err" id="ctErr"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARGA MENSUAL -->
+    <div class="page hidden" id="tabCarga">
+      <div class="card">
+        <h3>Registrar mes — nivel cliente</h3>
+        <div class="form-grid">
+          <div class="fg"><label>Cliente</label><select id="mCli" onchange="preCargaMes()"></select></div>
+          <div class="fg"><label>Año</label><select id="mAnio" onchange="preCargaMes()"><option value="2024">2024</option><option value="2025" selected>2025</option><option value="2026">2026</option></select></div>
+          <div class="fg"><label>Mes</label><select id="mMes" onchange="preCargaMes()"><option value="0">Enero</option><option value="1">Febrero</option><option value="2">Marzo</option><option value="3">Abril</option><option value="4">Mayo</option><option value="5">Junio</option><option value="6">Julio</option><option value="7">Agosto</option><option value="8">Septiembre</option><option value="9">Octubre</option><option value="10">Noviembre</option><option value="11">Diciembre</option></select></div>
+          <div class="fg"><label>Ventas ($)</label><input type="number" id="mV" placeholder="0"/></div>
+          <div class="fg"><label>Meta ($)</label><input type="number" id="mMe" placeholder="0"/></div>
+          <div class="fg"><label>Promotores</label><input type="number" id="mPro" placeholder="0"/></div>
+          <div class="fg"><label>Costo real ($)</label><input type="number" id="mCo" placeholder="0"/></div>
+          
+        </div>
+        <button class="btn-primary" onclick="guardarMes()">Guardar en Google Sheets</button>
+        <div id="mLoad" class="loader hidden"><div class="spinner"></div>Guardando...</div>
+        <div class="msg-ok" id="mOk">Guardado correctamente</div>
+        <div class="msg-err" id="mErr"></div>
+      </div>
+      <div class="card"><h3>Historial del cliente</h3><div id="mHist"><div class="loader"><div class="spinner"></div>Selecciona cliente y mes</div></div></div>
+    </div>
+
+    <!-- ROI -->
+    <div class="page hidden" id="tabRoi">
+      <div class="sf">
+        <div class="fg"><label>Cliente</label><select id="roiCli" onchange="loadRoi()"></select></div>
+        <div class="fg"><label>Año</label><select id="roiAnio" onchange="loadRoi()"><option value="2024">2024</option><option value="2025" selected>2025</option><option value="2026">2026</option></select></div>
+      </div>
+      <div id="roiLoad" class="loader"><div class="spinner"></div>Calculando...</div>
+      <div id="roiCont" class="hidden">
+        <div class="kpi-grid" id="roiKpis"></div>
+        <div class="card"><h3>ROI mensual</h3><div class="tbl-wrap"><table><thead><tr><th>Mes</th><th>Ventas</th><th>Costo promotores</th><th>Utilidad</th><th>ROI %</th></tr></thead><tbody id="roiTab"></tbody></table></div></div>
+        <div style="background:#f9fafb;border:1px solid var(--line);border-radius:8px;padding:12px;font-size:12px;color:var(--muted);">ROI = (Ventas − Costo promotores) ÷ Costo promotores × 100. Si no hay costo real, usa costo base × promotores del mes.</div>
+      </div>
+    </div>
+
+    <!-- PROYECCION -->
+    <div class="page hidden" id="tabProy">
+      <div class="card"><h3>Parámetros</h3>
+        <div class="form-grid">
+          <div class="fg"><label>Cliente</label><select id="pCli" onchange="calcProy()"></select></div>
+          <div class="fg"><label>Año base</label><select id="pAnio" onchange="calcProy()"><option value="2024">2024</option><option value="2025" selected>2025</option><option value="2026">2026</option></select></div>
+          <div class="fg"><label>Crecimiento mensual %</label><input type="number" id="pCrec" value="5" oninput="calcProy()"/></div>
+          <div class="fg"><label>Meta anual (opcional)</label><input type="number" id="pMeta" placeholder="Automático" oninput="calcProy()"/></div>
+        </div>
+      </div>
+      <div class="kpi-grid" id="pKpis"></div>
+      <div class="card"><h3>Proyección mes a mes</h3><div class="tbl-wrap"><table><thead><tr><th>Mes</th><th>Real</th><th>Proyectado</th><th>Meta</th><th>Variación</th></tr></thead><tbody id="pTab"></tbody></table></div></div>
+    </div>
+
+    <!-- HISTORIAL -->
+    <div class="page hidden" id="tabHist">
+      <div class="sf">
+        <div class="fg"><label>Cliente</label><select id="hCli" onchange="loadHist()"></select></div>
+        <div class="fg"><label>Año</label><select id="hAnio" onchange="loadHist()"><option value="2024">2024</option><option value="2025" selected>2025</option><option value="2026">2026</option></select></div>
+      </div>
+      <div id="hLoad" class="loader"><div class="spinner"></div>Cargando...</div>
+      <div id="hCont" class="hidden">
+        <div class="kpi-grid" id="hKpis"></div>
+        <div class="two-col">
+          <div class="card"><h3>Ranking mejores meses</h3><div class="tbl-wrap"><table><thead><tr><th>Pos.</th><th>Mes</th><th>Ventas</th><th>Cumplim.</th></tr></thead><tbody id="hRank"></tbody></table></div></div>
+          <div class="card"><h3>Todos los meses</h3><div class="tbl-wrap"><table><thead><tr><th>Mes</th><th>Ventas</th><th>Meta</th><th>Cumplim.</th><th>Estado</th></tr></thead><tbody id="hTodos"></tbody></table></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLIENTE: DATOS -->
+    <div class="page hidden" id="tabClDatos">
+      <div id="cdLoad" class="loader"><div class="spinner"></div>Cargando...</div>
+      <div id="cdCont" class="hidden">
+        <div class="kpi-grid" id="cdKpis"></div>
+        <div class="card"><h3>Ventas vs meta</h3><div class="chart-box" style="height:260px"><canvas id="cClV" role="img" aria-label="Ventas cliente">Ventas.</canvas></div></div>
+        <div class="card"><h3>Detalle mensual</h3><div class="tbl-wrap"><table><thead><tr><th>Mes</th><th>Ventas</th><th>Meta</th><th>Cumplim.</th><th>Brecha</th><th>Estado</th></tr></thead><tbody id="cdTab"></tbody></table></div></div>
+      </div>
+    </div>
+
+    <!-- CLIENTE: TIENDAS -->
+    <div class="page hidden" id="tabClTiendas">
+      <div id="ctClLoad" class="loader"><div class="spinner"></div>Cargando tiendas...</div>
+      <div id="ctClCont" class="hidden">
+        <div class="kpi-grid" id="ctClKpis"></div>
+        <div class="card"><h3>Cumplimiento por tienda</h3><div class="chart-box" style="height:380px"><canvas id="cClT" role="img" aria-label="Tiendas cliente">Tiendas.</canvas></div></div>
+        <div class="card"><h3>Detalle tiendas</h3><div class="tbl-wrap"><table><thead><tr><th>Tienda</th><th>Ventas acum.</th><th>Meta acum.</th><th>Cumplim.</th><th>Estado</th></tr></thead><tbody id="ctClTab"></tbody></table></div></div>
+      </div>
+    </div>
+
+    <!-- CLIENTE: ROI -->
+    <div class="page hidden" id="tabClRoi">
+      <div id="crLoad" class="loader"><div class="spinner"></div>Calculando ROI...</div>
+      <div id="crCont" class="hidden">
+        <div class="kpi-grid" id="crKpis"></div>
+        <div class="card"><h3>ROI mensual</h3><div class="tbl-wrap"><table><thead><tr><th>Mes</th><th>Ventas</th><th>Costo</th><th>Utilidad</th><th>ROI %</th></tr></thead><tbody id="crTab"></tbody></table></div></div>
+      </div>
+    </div>
+
+    <!-- CLIENTE: PROYECCION -->
+    <div class="page hidden" id="tabClProy">
+      <div class="card"><h3>Simular escenario</h3>
+        <div class="form-grid">
+          <div class="fg"><label>Crecimiento mensual %</label><input type="number" id="cpCrec" value="5" oninput="calcClProy()"/></div>
+          <div class="fg"><label>Meta anual (opcional)</label><input type="number" id="cpMeta" placeholder="Automático" oninput="calcClProy()"/></div>
+        </div>
+      </div>
+      <div class="kpi-grid" id="cpKpis"></div>
+      <div class="card"><div class="tbl-wrap"><table><thead><tr><th>Mes</th><th>Real</th><th>Proyectado</th><th>Meta</th><th>Variación</th></tr></thead><tbody id="cpTab"></tbody></table></div></div>
+    </div>
+
+    <!-- CALCULAR META -->
+    <div class="page hidden" id="tabMeta">
+      <div style="margin-bottom:16px;">
+        <div style="font-size:18px;font-weight:700;margin-bottom:4px;">Calculadora de metas</div>
+        <div style="font-size:13px;color:var(--muted);">Genera metas con criterios reales — no solo el 10% fijo.</div>
+      </div>
+
+      <div class="two-col" style="align-items:start;">
+        <div>
+          <!-- PASO 1: Datos base -->
+          <div class="meta-step">
+            <div class="meta-step-header">
+              <div class="step-num">1</div>
+              <div><div class="step-title">Base histórica</div><div class="step-desc">Ventas reales del mismo mes el año pasado</div></div>
+            </div>
+            <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr;">
+              <div class="fg"><label>Cliente</label><select id="mc-cli" onchange="mcCargarTiendas()"></select></div>
+              <div class="fg"><label>Tienda</label><select id="mc-tienda"><option value="">— General (cliente) —</option></select></div>
+              <div class="fg"><label>Mes a proyectar</label><select id="mc-mes"><option value="0">Enero</option><option value="1">Febrero</option><option value="2">Marzo</option><option value="3">Abril</option><option value="4">Mayo</option><option value="5">Junio</option><option value="6">Julio</option><option value="7">Agosto</option><option value="8">Septiembre</option><option value="9">Octubre</option><option value="10">Noviembre</option><option value="11">Diciembre</option></select></div>
+            </div>
+            <div class="form-grid" style="grid-template-columns:1fr 1fr;">
+              <div class="fg"><label>Ventas mismo mes año anterior ($)</label><input type="number" id="mc-base" placeholder="Ej: 6500000" oninput="calcMeta()"/></div>
+              <div class="fg"><label>Ventas mes anterior actual ($)</label><input type="number" id="mc-mesant" placeholder="Para calcular tendencia" oninput="calcMeta()"/></div>
+            </div>
+            <button class="btn-primary" style="font-size:12px;padding:7px 14px;" onclick="mcAutocargar()">Autocargar desde Sheets</button>
+            <div id="mc-autoload-msg" style="font-size:12px;color:var(--ok);margin-top:6px;display:none;">Datos cargados desde Sheets</div>
+          </div>
+
+          <!-- PASO 2: Días hábiles -->
+          <div class="meta-step">
+            <div class="meta-step-header">
+              <div class="step-num">2</div>
+              <div><div class="step-title">Días hábiles</div><div class="step-desc">Si el mes tiene más días de venta, la meta sube proporcionalmente</div></div>
+            </div>
+            <div class="form-grid" style="grid-template-columns:1fr 1fr;">
+              <div class="fg"><label>Días hábiles mismo mes año anterior</label><input type="number" id="mc-dias-ant" value="26" min="1" max="31" oninput="calcMeta()"/></div>
+              <div class="fg"><label>Días hábiles mes a proyectar</label><input type="number" id="mc-dias-proy" value="26" min="1" max="31" oninput="calcMeta()"/></div>
+            </div>
+          </div>
+
+          <!-- PASO 3: Mercado -->
+          <div class="meta-step">
+            <div class="meta-step-header">
+              <div class="step-num">3</div>
+              <div><div class="step-title">Crecimiento de mercado</div><div class="step-desc">Inflación o crecimiento esperado del sector retail</div></div>
+            </div>
+            <div class="range-wrap" style="margin-bottom:6px;">
+              <span style="font-size:12px;color:var(--muted);min-width:160px;">Crecimiento mercado %</span>
+              <input type="range" id="mc-mercado" min="-5" max="20" value="5" step="0.5" oninput="document.getElementById('mc-mercado-val').textContent=this.value+'%';calcMeta()"/>
+              <span class="range-val" id="mc-mercado-val">5%</span>
+            </div>
+            <div style="font-size:11px;color:var(--muted);">Referencia: IPC Chile 2024 ~4.5% · Sector retail ~5-7%</div>
+          </div>
+
+          <!-- PASO 4: Tendencia del local -->
+          <div class="meta-step">
+            <div class="meta-step-header">
+              <div class="step-num">4</div>
+              <div><div class="step-title">Tendencia reciente del local</div><div class="step-desc">¿Cómo viene el local en los últimos meses?</div></div>
+            </div>
+            <div class="range-wrap" style="margin-bottom:6px;">
+              <span style="font-size:12px;color:var(--muted);min-width:160px;">Ajuste por tendencia %</span>
+              <input type="range" id="mc-tendencia" min="-20" max="20" value="0" step="1" oninput="document.getElementById('mc-tend-val').textContent=(this.value>0?'+':'')+this.value+'%';calcMeta()"/>
+              <span class="range-val" id="mc-tend-val">0%</span>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+              <button onclick="setTend(-10)" style="font-size:11px;padding:4px 10px;border:1px solid #fca5a5;border-radius:6px;cursor:pointer;background:#fff;color:var(--bad);">Bajando fuerte −10%</button>
+              <button onclick="setTend(-5)"  style="font-size:11px;padding:4px 10px;border:1px solid #fed7aa;border-radius:6px;cursor:pointer;background:#fff;color:var(--warn);">Bajando leve −5%</button>
+              <button onclick="setTend(0)"   style="font-size:11px;padding:4px 10px;border:1px solid #d1d5db;border-radius:6px;cursor:pointer;background:#fff;">Estable 0%</button>
+              <button onclick="setTend(5)"   style="font-size:11px;padding:4px 10px;border:1px solid #86efac;border-radius:6px;cursor:pointer;background:#fff;color:var(--ok);">Subiendo leve +5%</button>
+              <button onclick="setTend(10)"  style="font-size:11px;padding:4px 10px;border:1px solid #6ee7b7;border-radius:6px;cursor:pointer;background:#fff;color:var(--ok);">Subiendo fuerte +10%</button>
+            </div>
+          </div>
+
+          <!-- PASO 5: Factor estacional -->
+          <div class="meta-step">
+            <div class="meta-step-header">
+              <div class="step-num">5</div>
+              <div><div class="step-title">Factor estacional</div><div class="step-desc">Eventos puntuales que afectan las ventas del mes</div></div>
+            </div>
+            <div class="range-wrap" style="margin-bottom:8px;">
+              <span style="font-size:12px;color:var(--muted);min-width:160px;">Ajuste estacional %</span>
+              <input type="range" id="mc-estacional" min="-30" max="50" value="0" step="1" oninput="document.getElementById('mc-est-val').textContent=(this.value>0?'+':'')+this.value+'%';calcMeta()"/>
+              <span class="range-val" id="mc-est-val">0%</span>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <button onclick="setEst(-15)" style="font-size:11px;padding:4px 10px;border:1px solid #fca5a5;border-radius:6px;cursor:pointer;background:#fff;color:var(--bad);">Semana Santa −15%</button>
+              <button onclick="setEst(20)"  style="font-size:11px;padding:4px 10px;border:1px solid #86efac;border-radius:6px;cursor:pointer;background:#fff;color:var(--ok);">Fiestas Patrias +20%</button>
+              <button onclick="setEst(35)"  style="font-size:11px;padding:4px 10px;border:1px solid #6ee7b7;border-radius:6px;cursor:pointer;background:#fff;color:var(--ok);">Navidad/Año Nuevo +35%</button>
+              <button onclick="setEst(15)"  style="font-size:11px;padding:4px 10px;border:1px solid #93c5fd;border-radius:6px;cursor:pointer;background:#fff;color:var(--accent);">CyberDay +15%</button>
+              <button onclick="setEst(0)"   style="font-size:11px;padding:4px 10px;border:1px solid #d1d5db;border-radius:6px;cursor:pointer;background:#fff;">Sin evento 0%</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- RESULTADOS -->
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;">Resultados</div>
+
+          <div class="result-box suggested">
+            <div class="result-label" style="color:#065f46;">Meta sugerida</div>
+            <div class="result-amount" style="color:#065f46;" id="mc-res-sug">$0</div>
+            <div class="result-sub" id="mc-res-sug-sub">Ingresa la base histórica para calcular</div>
+          </div>
+          <div class="two-col" style="margin-bottom:12px;">
+            <div class="result-box conservative" style="margin-bottom:0;">
+              <div class="result-label" style="color:#1e40af;">Conservadora</div>
+              <div class="result-amount" style="color:#1e40af;font-size:20px;" id="mc-res-con">$0</div>
+              <div class="result-sub">−5% de la sugerida</div>
+            </div>
+            <div class="result-box ambitious" style="margin-bottom:0;">
+              <div class="result-label" style="color:#92400e;">Exigente</div>
+              <div class="result-amount" style="color:#92400e;font-size:20px;" id="mc-res-amb">$0</div>
+              <div class="result-sub">+10% de la sugerida</div>
+            </div>
+          </div>
+
+          <!-- Desglose de factores -->
+          <div class="card">
+            <h3>Desglose por factor</h3>
+            <div id="mc-desglose">
+              <div style="font-size:13px;color:var(--muted);">Completa los datos para ver el desglose.</div>
+            </div>
+          </div>
+
+          <!-- Comparación vs 10% fijo -->
+          <div class="vs-10">
+            <div>
+              <div style="font-size:12px;color:var(--muted);">Método 10% fijo daría:</div>
+              <div style="font-size:18px;font-weight:700;" id="mc-vs10">$0</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:12px;color:var(--muted);">Diferencia</div>
+              <div style="font-size:16px;font-weight:700;" id="mc-diff">—</div>
+            </div>
+          </div>
+
+          <!-- Guardar meta -->
+          <div class="card" style="margin-top:12px;" id="mc-guardar-box">
+            <h3>Guardar meta calculada</h3>
+            <div style="font-size:13px;color:var(--muted);margin-bottom:10px;">Guarda la meta sugerida directamente en Sheets para el mes seleccionado.</div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+              <button class="btn-primary guardar-meta-btn" onclick="guardarMetaCalculada()">Guardar meta sugerida en Sheets</button>
+              <div id="mc-save-load" class="loader hidden" style="padding:0;"><div class="spinner"></div><span style="margin-left:6px;font-size:12px;">Guardando...</span></div>
+              <div id="mc-save-ok" style="font-size:12px;color:var(--ok);display:none;">Meta guardada en Sheets</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const API='https://script.google.com/macros/s/AKfycbwBNxssrn0DJmv_2CjQODcrNU2HY0C3v066EKq7DRzK5Z-UXf8YueN6bTCmn7OaVVOc/exec';
+const MES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const USERS={
+  mariano:{pass:'kam123',rol:'kam',nombre:'Mariano KAM',cid:null},
+  equipo:{pass:'equipo123',rol:'equipo',nombre:'Equipo Touch',cid:null},
+  gnomo:{pass:'gnomo123',rol:'cliente',nombre:'Gnomo',cid:1},
+  trauko:{pass:'trauko123',rol:'cliente',nombre:'Trauko',cid:2},
+  inztinto:{pass:'inz123',rol:'cliente',nombre:'Inztinto',cid:3},
+  hites:{pass:'hites123',rol:'cliente',nombre:'Hites',cid:4},
+};
+let S=null,clientes=[],cache={},CH={};
+
+function fmt(n){return '$'+Math.round(n||0).toLocaleString('es-CL');}
+function fp(n){return(Math.round((n||0)*10)/10).toFixed(1)+'%';}
+function show(id){document.getElementById(id).classList.remove('hidden');}
+function hide(id){document.getElementById(id).classList.add('hidden');}
+function bdg(p){if(p>=100)return'<span class="badge ok">Cumplida</span>';if(p>=90)return'<span class="badge warn">En riesgo</span>';if(p>0)return'<span class="badge bad">No cumplida</span>';return'<span class="badge gray">Sin datos</span>';}
+function pb(p){const c=p>=100?'#16a34a':p>=90?'#d97706':'#dc2626';return`<div class="prog-wrap"><div class="prog-bar" style="width:${Math.min(100,p)}%;background:${c};"></div></div>`;}
+function dc(id){if(CH[id]){CH[id].destroy();delete CH[id];}}
+async function ag(p){const r=await fetch(API+'?'+new URLSearchParams(p).toString());return r.json();}
+async function ap(a,b){const r=await fetch(API+'?action='+encodeURIComponent(a),{method:'POST',body:JSON.stringify(b)});return r.json();}
+
+function doLogin(){
+  const u=document.getElementById('lu').value.trim().toLowerCase();
+  const p=document.getElementById('lp').value;
+  const f=USERS[u];const e=document.getElementById('lerr');
+  if(f&&f.pass===p){S={u,...f};e.style.display='none';hide('loginWrap');show('appWrap');startApp();}
+  else{e.textContent='Usuario o contraseña incorrectos';e.style.display='block';}
+}
+function doLogout(){
+  S=null;clientes=[];cache={};
+  Object.keys(CH).forEach(k=>{try{CH[k].destroy();}catch(e){}});CH={};
+  show('loginWrap');hide('appWrap');hide('navKam');hide('navCl');
+  document.getElementById('lu').value='';document.getElementById('lp').value='';
+}
+
+async function startApp(){
+  document.getElementById('ulab').textContent=S.nombre;
+  const pill=document.getElementById('rpill');
+  const lb={kam:'KAM',equipo:'Equipo',cliente:'Cliente'};
+  const cl={kam:'pill-kam',equipo:'pill-equipo',cliente:'pill-cliente'};
+  pill.textContent=lb[S.rol];pill.className='role-pill '+cl[S.rol];
+  if(S.rol==='equipo')document.querySelectorAll('.kam-only').forEach(el=>el.classList.add('hidden'));
+  if(S.rol==='kam'||S.rol==='equipo'){
+    show('navKam');await loadClientes();poblarSel();loadRes();
+  // populate meta calc select
+  document.getElementById('mc-cli').innerHTML=clientes.map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');mcCargarTiendas();
+  } else {show('navCl');await loadClientes();loadClDatos();}
+}
+
+async function loadClientes(){
+  if(clientes.length)return;
+  try{const r=await ag({action:'getClientes'});if(r.ok)clientes=r.clientes||[];}catch(e){clientes=[];}
+}
+function poblarSel(){
+  ['rCli','tCli','mCli','roiCli','pCli','hCli'].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    el.innerHTML=clientes.map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');
+  });
+}
+
+function kTab(id,btn){
+  document.querySelectorAll('#navKam .nav-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  document.querySelectorAll('.page').forEach(p=>{p.classList.remove('active');p.classList.add('hidden');});
+  document.getElementById(id).classList.remove('hidden');document.getElementById(id).classList.add('active');
+  if(id==='tabRes')loadRes();if(id==='tabTiendas')loadTiendas();
+  if(id==='tabCarga')preCargaMes();if(id==='tabRoi')loadRoi();
+  if(id==='tabProy')calcProy();if(id==='tabHist')loadHist();
+}
+function cTab(id,btn){
+  document.querySelectorAll('#navCl .nav-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  document.querySelectorAll('.page').forEach(p=>{p.classList.remove('active');p.classList.add('hidden');});
+  document.getElementById(id).classList.remove('hidden');document.getElementById(id).classList.add('active');
+  if(id==='tabClDatos')loadClDatos();if(id==='tabClTiendas')loadClTiendas();
+  if(id==='tabClRoi')loadClRoi();if(id==='tabClProy')calcClProy();
+}
+
+// CACHE
+async function gMeses(cid,anio){const k='m_'+cid+'_'+anio;if(!cache[k]){const r=await ag({action:'getMeses',cliente_id:cid,anio});cache[k]=r.ok?r.meses:[];}return cache[k];}
+async function gTiendas(cid){const k='t_'+cid;if(!cache[k]){const r=await ag({action:'getTiendas',cliente_id:cid});cache[k]=r.ok?r.tiendas:[];}return cache[k];}
+async function gMT(cid,anio){const k='mt_'+cid+'_'+anio;if(!cache[k]){const r=await ag({action:'getMesesTienda',cliente_id:cid,anio});cache[k]=r.ok?r.meses:[];}return cache[k];}
+async function gRoi(cid,anio){const k='roi_'+cid+'_'+anio;if(!cache[k]){const r=await ag({action:'getRoi',cliente_id:cid,anio});cache[k]=r.ok?r:{meses:[],resumen:{totalVentas:0,totalCosto:0,totalUtilidad:0,roiAnual:0}};}return cache[k];}
+
+function chartTiendas(canvasId,tiendas,mesesT,mesIdx){
+  dc(canvasId);
+  if(!tiendas.length)return;
+  const mRec=mesesT.filter(m=>m.mes==mesIdx);
+  const labels=tiendas.map(t=>t.nombre.replace(/^(Gnomo|Trauko|Hites|Inztinto)\s/i,''));
+  const data=tiendas.map(t=>{const m=mRec.find(x=>x.tienda_id==t.id);return m&&m.meta>0?Math.round((m.ventas/m.meta)*1000)/10:0;});
+  const colors=data.map(v=>v>=100?'#16a34a':v>=90?'#d97706':'#dc2626');
+  CH[canvasId]=new Chart(document.getElementById(canvasId).getContext('2d'),{
+    type:'bar',data:{labels,datasets:[{label:'Cumplimiento %',data,backgroundColor:colors,borderRadius:4}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},title:{display:true,text:'Cumplimiento '+MES[mesIdx],font:{size:12}}},
+      scales:{x:{min:0,max:150,ticks:{callback:v=>v+'%'}},y:{ticks:{font:{size:11}}}}}
+  });
+}
+
+function chartVentas(canvasId,meses){
+  dc(canvasId);if(!meses.length)return;
+  CH[canvasId]=new Chart(document.getElementById(canvasId).getContext('2d'),{
+    type:'bar',data:{labels:meses.map(m=>MES[m.mes].substring(0,3)),
+      datasets:[
+        {label:'Ventas',data:meses.map(m=>Math.round(m.ventas/100000)/10),backgroundColor:'#2563eb',borderRadius:4},
+        {label:'Meta',data:meses.map(m=>Math.round(m.meta/100000)/10),type:'line',borderColor:'#d97706',borderWidth:2,borderDash:[4,3],pointRadius:3,fill:false,tension:0.3,backgroundColor:'transparent'}
+      ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:11},boxWidth:12}}},
+      scales:{y:{ticks:{callback:v=>'$'+v+'M'}},x:{ticks:{autoSkip:false}}}}
+  });
+}
+
+// RESUMEN
+async function loadRes(){
+  const cid=document.getElementById('rCli').value,anio=document.getElementById('rAnio').value;
+  if(!cid)return;hide('rCont');show('rLoad');
+  const[meses,tiendas,mesesT,roi]=await Promise.all([gMeses(cid,anio),gTiendas(cid),gMT(cid,anio),gRoi(cid,anio)]);
+  hide('rLoad');
+  const totalV=meses.reduce((a,m)=>a+(m.ventas||0),0);
+  const totalM=meses.reduce((a,m)=>a+(m.meta||0),0);
+  const promC=meses.length?meses.reduce((a,m)=>a+(m.cumplimiento||0),0)/meses.length:0;
+  const roiA=roi.resumen.roiAnual||0;
+  const cc=promC>=100?'ok':promC>=90?'warn':'bad';
+  document.getElementById('rKpis').innerHTML=`
+    <div class="kpi"><div class="k-label">Ventas acumuladas</div><div class="k-value">${fmt(totalV)}</div></div>
+    <div class="kpi"><div class="k-label">Meta acumulada</div><div class="k-value">${fmt(totalM)}</div></div>
+    <div class="kpi"><div class="k-label">Cumplimiento prom.</div><div class="k-value ${cc}">${fp(promC)}</div></div>
+    <div class="kpi"><div class="k-label">ROI anual</div><div class="k-value ${roiA>=0?'ok':'bad'}">${fp(roiA)}</div></div>
+    <div class="kpi"><div class="k-label">Tiendas activas</div><div class="k-value">${tiendas.filter(t=>t.estado==='Activo').length}</div></div>
+  `;
+  const mesRec=mesesT.length?Math.max(...mesesT.map(m=>m.mes)):0;
+  chartTiendas('cTiendas',tiendas,mesesT,mesRec);
+  chartVentas('cVentas',meses);
+  document.getElementById('rTabMes').innerHTML=meses.length?meses.map(m=>`<tr><td>${MES[m.mes]}</td><td>${fmt(m.ventas)}</td><td>${fmt(m.meta)}</td><td>${pb(m.cumplimiento)} ${fp(m.cumplimiento)}</td><td style="color:${m.brecha>=0?'var(--ok)':'var(--bad)'}">${fmt(m.brecha)}</td><td>${bdg(m.cumplimiento)}</td></tr>`).join(''):'<tr><td colspan="6" style="color:var(--muted)">Sin datos.</td></tr>';
+  const mRec=mesesT.filter(m=>m.mes==mesRec);
+  const rank=tiendas.map(t=>{const mt=mRec.find(m=>m.tienda_id==t.id);const v=mt?mt.ventas:0;const me=mt?mt.meta:t.meta_mensual;const cp=me>0?Math.round((v/me)*1000)/10:0;return{...t,v,me,cp};}).sort((a,b)=>b.cp-a.cp);
+  document.getElementById('rTabTiendas').innerHTML=rank.length?rank.map(t=>`<tr><td>${t.nombre}</td><td>${fmt(t.v)}</td><td>${fmt(t.me)}</td><td>${pb(t.cp)} ${fp(t.cp)}</td><td>${bdg(t.cp)}</td></tr>`).join(''):'<tr><td colspan="5" style="color:var(--muted)">Sin datos de tiendas.</td></tr>';
+  show('rCont');
+}
+
+// TIENDAS
+async function loadTiendas(){
+  const cid=document.getElementById('tCli').value,anio=document.getElementById('tAnio').value;
+  if(!cid)return;hide('tCont');show('tLoad');
+  const[ts,mesesT]=await Promise.all([gTiendas(cid),gMT(cid,anio)]);
+  hide('tLoad');
+  document.getElementById('ctT').innerHTML=ts.map(t=>`<option value="${t.id}">${t.nombre}</option>`).join('');
+  const tAct=ts.filter(t=>t.estado==='Activo').length;
+  const totalV=mesesT.reduce((a,m)=>a+(m.ventas||0),0);
+  const sobre=ts.filter(t=>{const mts=mesesT.filter(m=>m.tienda_id==t.id);const avg=mts.length?mts.reduce((a,m)=>a+(m.cumplimiento||0),0)/mts.length:0;return avg>=100;}).length;
+  document.getElementById('tKpis').innerHTML=`
+    <div class="kpi"><div class="k-label">Total tiendas</div><div class="k-value">${ts.length}</div></div>
+    <div class="kpi"><div class="k-label">Tiendas activas</div><div class="k-value ok">${tAct}</div></div>
+    <div class="kpi"><div class="k-label">Sobre meta</div><div class="k-value ok">${sobre}</div></div>
+    <div class="kpi"><div class="k-label">Ventas acumuladas</div><div class="k-value">${fmt(totalV)}</div></div>
+  `;
+  const mesRec=mesesT.length?Math.max(...mesesT.map(m=>m.mes)):0;
+  const mRec=mesesT.filter(m=>m.mes==mesRec);
+  chartTiendas('cTBar',ts,mRec.length?mRec:mesesT,mesRec);
+  document.getElementById('tTab').innerHTML=ts.map(t=>{
+    const mts=mesesT.filter(m=>m.tienda_id==t.id);
+    const vA=mts.reduce((a,m)=>a+(m.ventas||0),0);
+    const mA=mts.reduce((a,m)=>a+(m.meta||0),0)||t.meta_mensual*mts.length;
+    const cp=mA>0?Math.round((vA/mA)*1000)/10:0;
+    return`<tr><td><strong>${t.nombre}</strong></td><td>${t.comuna||'—'}</td><td>${t.promotores}</td><td>${fmt(t.meta_mensual)}</td><td>${fmt(vA)}</td><td>${pb(cp)} ${fp(cp)}</td><td>${bdg(cp)}</td><td>${S.rol==='kam'?`<button class="btn-danger" onclick="delTienda(${t.id})">✕</button>`:''}</td></tr>`;
+  }).join('');
+  show('tCont');preCargaTienda();
+}
+
+async function addTienda(){
+  const cid=document.getElementById('tCli').value;
+  const nom=document.getElementById('taNom').value.trim();if(!nom){alert('Ingresa el nombre');return;}
+  const r=await ap('saveTienda',{cliente_id:cid,nombre:nom,comuna:document.getElementById('taCom').value,promotores:parseInt(document.getElementById('taPro').value)||1,meta_mensual:parseFloat(document.getElementById('taMet').value)||0,estado:'Activo'});
+  if(r.ok){delete cache['t_'+cid];['taNom','taCom','taPro','taMet'].forEach(id=>document.getElementById(id).value='');const ok=document.getElementById('taOk');ok.style.display='block';setTimeout(()=>ok.style.display='none',3000);loadTiendas();}
+}
+async function delTienda(id){
+  if(!confirm('¿Eliminar esta tienda?'))return;
+  const cid=document.getElementById('tCli').value;
+  await ap('deleteTienda',{id});delete cache['t_'+cid];loadTiendas();
+}
+
+async function preCargaTienda(){
+  const tid=document.getElementById('ctT').value,anio=document.getElementById('tAnio').value,mes=parseInt(document.getElementById('ctM').value);
+  const cid=document.getElementById('tCli').value;
+  const mts=await gMT(cid,anio);
+  const m=mts.find(x=>x.tienda_id==tid&&x.mes==mes);
+  const ts=await gTiendas(cid);const t=ts.find(x=>x.id==tid);
+  document.getElementById('ctV').value=m?m.ventas:'';
+  document.getElementById('ctMe').value=m?m.meta:(t?t.meta_mensual:'');
+  
+  document.getElementById('ctC').value=m?m.costo_real:'';
+}
+
+async function guardarMesTienda(){
+  const cid=document.getElementById('tCli').value,tid=document.getElementById('ctT').value;
+  const anio=parseInt(document.getElementById('tAnio').value),mes=parseInt(document.getElementById('ctM').value);
+  const body={tienda_id:tid,cliente_id:cid,anio,mes,ventas:parseFloat(document.getElementById('ctV').value)||0,meta:parseFloat(document.getElementById('ctMe').value)||0,costo_real:parseFloat(document.getElementById('ctC').value)||0};
+  show('ctLoad');const r=await ap('saveMesTienda',body);hide('ctLoad');
+  if(r.ok){delete cache['mt_'+cid+'_'+anio];const ok=document.getElementById('ctOk');ok.style.display='block';setTimeout(()=>ok.style.display='none',3000);loadTiendas();}
+  else{const err=document.getElementById('ctErr');err.textContent=r.error||'Error';err.style.display='block';setTimeout(()=>err.style.display='none',4000);}
+}
+
+// CARGA MENSUAL
+async function preCargaMes(){
+  const cid=document.getElementById('mCli').value,anio=document.getElementById('mAnio').value,mes=parseInt(document.getElementById('mMes').value);
+  if(!cid)return;
+  const meses=await gMeses(cid,anio);const m=meses.find(x=>x.mes==mes);
+  if(m){document.getElementById('mV').value=m.ventas||'';document.getElementById('mMe').value=m.meta||'';document.getElementById('mPro').value=m.promotores||'';document.getElementById('mCo').value=m.costo_real||'';}
+  else{['mV','mMe','mPro','mCo','mIn'].forEach(id=>document.getElementById(id).value='');}
+  document.getElementById('mHist').innerHTML=meses.length?`<div class="tbl-wrap"><table><thead><tr><th>Mes</th><th>Ventas</th><th>Meta</th><th>Promotores</th><th>Cumplim.</th></tr></thead><tbody>${meses.map(m=>`<tr><td>${MES[m.mes]}</td><td>${fmt(m.ventas)}</td><td>${fmt(m.meta)}</td><td>${m.promotores||0}</td><td>${fp(m.cumplimiento)}</td></tr>`).join('')}</tbody></table></div>`:'<p style="color:var(--muted);font-size:13px;">Sin datos para este año.</p>';
+}
+
+async function guardarMes(){
+  const cid=document.getElementById('mCli').value,anio=parseInt(document.getElementById('mAnio').value),mes=parseInt(document.getElementById('mMes').value);
+  const body={cliente_id:cid,anio,mes,ventas:parseFloat(document.getElementById('mV').value)||0,meta:parseFloat(document.getElementById('mMe').value)||0,promotores:parseInt(document.getElementById('mPro').value)||0,costo_real:parseFloat(document.getElementById('mCo').value)||0};
+  show('mLoad');const r=await ap('saveMes',body);hide('mLoad');
+  if(r.ok){delete cache['m_'+cid+'_'+anio];delete cache['roi_'+cid+'_'+anio];await preCargaMes();const ok=document.getElementById('mOk');ok.style.display='block';setTimeout(()=>ok.style.display='none',3000);}
+  else{const err=document.getElementById('mErr');err.textContent=r.error||'Error';err.style.display='block';setTimeout(()=>err.style.display='none',4000);}
+}
+
+// ROI
+async function loadRoi(){
+  const cid=document.getElementById('roiCli').value,anio=document.getElementById('roiAnio').value;
+  if(!cid)return;hide('roiCont');show('roiLoad');
+  const roi=await gRoi(cid,anio);hide('roiLoad');
+  const rs=roi.resumen;
+  document.getElementById('roiKpis').innerHTML=`<div class="kpi"><div class="k-label">Ventas totales</div><div class="k-value">${fmt(rs.totalVentas)}</div></div><div class="kpi"><div class="k-label">Costo promotores</div><div class="k-value">${fmt(rs.totalCosto)}</div></div><div class="kpi"><div class="k-label">Utilidad</div><div class="k-value ${rs.totalUtilidad>=0?'ok':'bad'}">${fmt(rs.totalUtilidad)}</div></div><div class="kpi"><div class="k-label">ROI anual</div><div class="k-value ${rs.roiAnual>=0?'ok':'bad'}">${fp(rs.roiAnual)}</div></div>`;
+  document.getElementById('roiTab').innerHTML=roi.meses.length?roi.meses.map(m=>`<tr><td>${MES[m.mes]}</td><td>${fmt(m.ventas)}</td><td>${fmt(m.costo_calculado)}</td><td>${fmt(m.utilidad)}</td><td style="color:${m.roi>=0?'var(--ok)':'var(--bad)'};font-weight:700;">${fp(m.roi)}</td></tr>`).join(''):'<tr><td colspan="5" style="color:var(--muted)">Sin datos.</td></tr>';
+  show('roiCont');
+}
+
+// PROYECCION
+function renderProy(meses,crec,metaA,kId,tId){
+  const grid=Array(12).fill(null).map((_,i)=>meses.find(m=>m.mes==i)||{mes:i,ventas:0,meta:0});
+  let ult=0,tot=0;
+  const rows=grid.map(m=>{if(m.ventas>0){ult=m.ventas;tot+=m.ventas;return{...m,proy:null,tipo:'real'};}const p=Math.round(ult*(1+crec));ult=p;tot+=p;return{...m,proy:p,tipo:'proy'};});
+  const cp=metaA>0?Math.round(tot/metaA*1000)/10:0;
+  const cc=cp>=100?'ok':cp>=90?'warn':'bad';
+  document.getElementById(kId).innerHTML=`<div class="kpi"><div class="k-label">Proyección anual</div><div class="k-value">${fmt(tot)}</div></div><div class="kpi"><div class="k-label">Meta anual</div><div class="k-value">${fmt(metaA)}</div></div><div class="kpi"><div class="k-label">Cumplim. proyectado</div><div class="k-value ${cc}">${fp(cp)}</div></div><div class="kpi"><div class="k-label">Faltante</div><div class="k-value">${fmt(Math.max(0,metaA-tot))}</div></div>`;
+  document.getElementById(tId).innerHTML=rows.map(r=>{const val=r.tipo==='real'?r.ventas:r.proy;const diff=val-(r.meta||0);const ds=r.meta>0?(diff>=0?`<span style="color:var(--ok)">+${fmt(diff)}</span>`:`<span style="color:var(--bad)">${fmt(diff)}</span>`):'—';return`<tr><td>${MES[r.mes]}</td><td>${r.tipo==='real'?fmt(r.ventas):'<span style="color:var(--muted)">—</span>'}</td><td>${r.tipo==='proy'?`<span style="color:var(--accent)">${fmt(r.proy)}</span>`:'<span style="color:var(--muted)">—</span>'}</td><td>${r.meta>0?fmt(r.meta):'—'}</td><td>${ds}</td></tr>`;}).join('');
+}
+
+async function calcProy(){
+  const cid=document.getElementById('pCli').value,anio=document.getElementById('pAnio').value;if(!cid)return;
+  const meses=await gMeses(cid,anio);
+  const crec=parseFloat(document.getElementById('pCrec').value)/100||0.05;
+  const metaA=parseFloat(document.getElementById('pMeta').value)||meses.reduce((a,m)=>a+(m.meta||0),0);
+  renderProy(meses,crec,metaA,'pKpis','pTab');
+}
+
+// HISTORIAL
+async function loadHist(){
+  const cid=document.getElementById('hCli').value,anio=document.getElementById('hAnio').value;
+  if(!cid)return;hide('hCont');show('hLoad');
+  const meses=await gMeses(cid,anio);hide('hLoad');
+  const con=meses.filter(m=>m.ventas>0);
+  const totalV=meses.reduce((a,m)=>a+(m.ventas||0),0);
+  const promC=con.length?con.reduce((a,m)=>a+(m.cumplimiento||0),0)/con.length:0;
+  const sobre=con.filter(m=>m.cumplimiento>=100).length;
+  const cc=promC>=100?'ok':promC>=90?'warn':'bad';
+  document.getElementById('hKpis').innerHTML=`<div class="kpi"><div class="k-label">Total ventas</div><div class="k-value">${fmt(totalV)}</div></div><div class="kpi"><div class="k-label">Cumplim. promedio</div><div class="k-value ${cc}">${fp(promC)}</div></div><div class="kpi"><div class="k-label">Meses sobre meta</div><div class="k-value ok">${sobre}</div></div>`;
+  document.getElementById('hRank').innerHTML=[...con].sort((a,b)=>b.ventas-a.ventas).map((m,i)=>`<tr><td><strong>${['1ro','2do','3ro'][i]||i+1+'to'}</strong></td><td>${MES[m.mes]}</td><td>${fmt(m.ventas)}</td><td>${fp(m.cumplimiento)}</td></tr>`).join('');
+  document.getElementById('hTodos').innerHTML=meses.map(m=>`<tr><td>${MES[m.mes]}</td><td>${fmt(m.ventas)}</td><td>${fmt(m.meta)}</td><td>${fp(m.cumplimiento)}</td><td>${bdg(m.cumplimiento)}</td></tr>`).join('');
+  show('hCont');
+}
+
+// CLIENTE
+async function loadClDatos(){
+  const anio=new Date().getFullYear();hide('cdCont');show('cdLoad');
+  const meses=await gMeses(S.cid,anio);hide('cdLoad');
+  const totalV=meses.reduce((a,m)=>a+(m.ventas||0),0),totalM=meses.reduce((a,m)=>a+(m.meta||0),0);
+  const promC=meses.length?meses.reduce((a,m)=>a+(m.cumplimiento||0),0)/meses.length:0;
+  const cc=promC>=100?'ok':promC>=90?'warn':'bad';
+  document.getElementById('cdKpis').innerHTML=`<div class="kpi"><div class="k-label">Ventas acumuladas</div><div class="k-value">${fmt(totalV)}</div></div><div class="kpi"><div class="k-label">Meta acumulada</div><div class="k-value">${fmt(totalM)}</div></div><div class="kpi"><div class="k-label">Cumplimiento</div><div class="k-value ${cc}">${fp(promC)}</div></div><div class="kpi"><div class="k-label">Meses con datos</div><div class="k-value">${meses.filter(m=>m.ventas>0).length}</div></div>`;
+  chartVentas('cClV',meses);
+  document.getElementById('cdTab').innerHTML=meses.length?meses.map(m=>`<tr><td>${MES[m.mes]}</td><td>${fmt(m.ventas)}</td><td>${fmt(m.meta)}</td><td>${pb(m.cumplimiento)} ${fp(m.cumplimiento)}</td><td style="color:${m.brecha>=0?'var(--ok)':'var(--bad)'}">${fmt(m.brecha)}</td><td>${bdg(m.cumplimiento)}</td></tr>`).join(''):'<tr><td colspan="6" style="color:var(--muted)">Sin datos.</td></tr>';
+  show('cdCont');
+}
+
+async function loadClTiendas(){
+  const anio=new Date().getFullYear();hide('ctClCont');show('ctClLoad');
+  const[ts,mesesT]=await Promise.all([gTiendas(S.cid),gMT(S.cid,anio)]);hide('ctClLoad');
+  document.getElementById('ctClKpis').innerHTML=`<div class="kpi"><div class="k-label">Total tiendas</div><div class="k-value">${ts.length}</div></div><div class="kpi"><div class="k-label">Activas</div><div class="k-value ok">${ts.filter(t=>t.estado==='Activo').length}</div></div>`;
+  const mesRec=mesesT.length?Math.max(...mesesT.map(m=>m.mes)):0;
+  chartTiendas('cClT',ts,mesesT,mesRec);
+  document.getElementById('ctClTab').innerHTML=ts.map(t=>{const mts=mesesT.filter(m=>m.tienda_id==t.id);const vA=mts.reduce((a,m)=>a+(m.ventas||0),0);const mA=mts.reduce((a,m)=>a+(m.meta||0),0)||t.meta_mensual*mts.length;const cp=mA>0?Math.round((vA/mA)*1000)/10:0;return`<tr><td>${t.nombre}</td><td>${fmt(vA)}</td><td>${fmt(mA)}</td><td>${pb(cp)} ${fp(cp)}</td><td>${bdg(cp)}</td></tr>`;}).join('');
+  show('ctClCont');
+}
+
+async function loadClRoi(){
+  const anio=new Date().getFullYear();hide('crCont');show('crLoad');
+  const roi=await gRoi(S.cid,anio);hide('crLoad');
+  const rs=roi.resumen;
+  document.getElementById('crKpis').innerHTML=`<div class="kpi"><div class="k-label">Ventas totales</div><div class="k-value">${fmt(rs.totalVentas)}</div></div><div class="kpi"><div class="k-label">Costo promotores</div><div class="k-value">${fmt(rs.totalCosto)}</div></div><div class="kpi"><div class="k-label">Utilidad</div><div class="k-value ${rs.totalUtilidad>=0?'ok':'bad'}">${fmt(rs.totalUtilidad)}</div></div><div class="kpi"><div class="k-label">ROI anual</div><div class="k-value ${rs.roiAnual>=0?'ok':'bad'}">${fp(rs.roiAnual)}</div></div>`;
+  document.getElementById('crTab').innerHTML=roi.meses.length?roi.meses.map(m=>`<tr><td>${MES[m.mes]}</td><td>${fmt(m.ventas)}</td><td>${fmt(m.costo_calculado)}</td><td>${fmt(m.utilidad)}</td><td style="color:${m.roi>=0?'var(--ok)':'var(--bad)'};font-weight:700;">${fp(m.roi)}</td></tr>`).join(''):'<tr><td colspan="5" style="color:var(--muted)">Sin datos.</td></tr>';
+  show('crCont');
+}
+
+async function calcClProy(){
+  const anio=new Date().getFullYear();
+  const meses=await gMeses(S.cid,anio);
+  const crec=parseFloat(document.getElementById('cpCrec').value)/100||0.05;
+  const metaA=parseFloat(document.getElementById('cpMeta').value)||meses.reduce((a,m)=>a+(m.meta||0),0);
+  renderProy(meses,crec,metaA,'cpKpis','cpTab');
+}
+
+// ── CALCULADORA DE METAS ──────────────────────────────────────────
+let mcResult = 0;
+
+async function mcCargarTiendas() {
+  const cid = document.getElementById('mc-cli').value;
+  if (!cid) return;
+  const ts = await gTiendas(cid);
+  const sel = document.getElementById('mc-tienda');
+  sel.innerHTML = '<option value="">— General (cliente) —</option>' +
+    ts.map(t => `<option value="${t.id}">${t.nombre}</option>`).join('');
+}
+
+async function mcAutocargar() {
+  const cid = document.getElementById('mc-cli').value;
+  const tiendaId = document.getElementById('mc-tienda').value;
+  const mesIdx = parseInt(document.getElementById('mc-mes').value);
+  const anioAnt = new Date().getFullYear() - 1;
+  const mesAnt = mesIdx === 0 ? 11 : mesIdx - 1;
+  const anioMesAnt = mesIdx === 0 ? anioAnt : new Date().getFullYear();
+
+  let mesesAnt, mesesRecientes;
+  if (tiendaId) {
+    const r1 = await ag({ action: 'getMesesTienda', cliente_id: cid, anio: anioAnt });
+    mesesAnt = r1.ok ? r1.meses.filter(m => m.tienda_id == tiendaId) : [];
+    const r2 = await ag({ action: 'getMesesTienda', cliente_id: cid, anio: anioMesAnt });
+    mesesRecientes = r2.ok ? r2.meses.filter(m => m.tienda_id == tiendaId) : [];
+  } else {
+    const r1 = await ag({ action: 'getMeses', cliente_id: cid, anio: anioAnt });
+    mesesAnt = r1.ok ? r1.meses : [];
+    const r2 = await ag({ action: 'getMeses', cliente_id: cid, anio: anioMesAnt });
+    mesesRecientes = r2.ok ? r2.meses : [];
+  }
+
+  const mBase = mesesAnt.find(m => m.mes == mesIdx);
+  const mAnterior = mesesRecientes.find(m => m.mes == mesAnt);
+
+  if (mBase) {
+    document.getElementById('mc-base').value = mBase.ventas || '';
+    const ok = document.getElementById('mc-autoload-msg');
+    ok.style.display = 'block'; setTimeout(() => ok.style.display = 'none', 3000);
+  }
+  if (mAnterior) document.getElementById('mc-mesant').value = mAnterior.ventas || '';
+  calcMeta();
+}
+
+function calcMeta() {
+  const base = parseFloat(document.getElementById('mc-base').value) || 0;
+  if (base === 0) {
+    ['mc-res-sug','mc-res-con','mc-res-amb','mc-vs10'].forEach(id => document.getElementById(id).textContent = '$0');
+    document.getElementById('mc-diff').textContent = '—';
+    document.getElementById('mc-desglose').innerHTML = '<div style="font-size:13px;color:var(--muted);">Completa la base histórica para ver el desglose.</div>';
+    return;
+  }
+
+  const diasAnt  = parseInt(document.getElementById('mc-dias-ant').value) || 26;
+  const diasProy = parseInt(document.getElementById('mc-dias-proy').value) || 26;
+  const mercado  = parseFloat(document.getElementById('mc-mercado').value) / 100;
+  const tendencia = parseFloat(document.getElementById('mc-tendencia').value) / 100;
+  const estacional = parseFloat(document.getElementById('mc-estacional').value) / 100;
+
+  // Cálculo encadenado
+  const paso1 = base;
+  const paso2 = paso1 * (diasProy / diasAnt);
+  const paso3 = paso2 * (1 + mercado);
+  const paso4 = paso3 * (1 + tendencia);
+  const paso5 = paso4 * (1 + estacional);
+
+  const sugerida    = Math.round(paso5);
+  const conservadora = Math.round(paso5 * 0.95);
+  const exigente    = Math.round(paso5 * 1.10);
+  const vs10        = Math.round(base * 1.10);
+  const diff        = sugerida - vs10;
+  mcResult = sugerida;
+
+  document.getElementById('mc-res-sug').textContent = fmt(sugerida);
+  document.getElementById('mc-res-sug-sub').textContent = `Basada en ${Object.entries({días:(diasProy/diasAnt-1)*100,mercado:mercado*100,tendencia:tendencia*100,estacional:estacional*100}).filter(([k,v])=>v!==0).map(([k,v])=>k+' '+(v>0?'+':'')+v.toFixed(1)+'%').join(', ') || 'base histórica ajustada'}`;
+  document.getElementById('mc-res-con').textContent = fmt(conservadora);
+  document.getElementById('mc-res-amb').textContent = fmt(exigente);
+  document.getElementById('mc-vs10').textContent = fmt(vs10);
+  document.getElementById('mc-diff').textContent = (diff >= 0 ? '+' : '') + fmt(diff);
+  document.getElementById('mc-diff').style.color = diff >= 0 ? 'var(--ok)' : 'var(--bad)';
+
+  const diasFactor = diasProy / diasAnt;
+  const desglose = [
+    { label: 'Base histórica (mismo mes año anterior)', val: base, tipo: 'neutral' },
+    { label: `Ajuste días hábiles (${diasAnt} → ${diasProy} días)`, val: paso2 - paso1, tipo: diasFactor >= 1 ? 'up' : 'down' },
+    { label: `Crecimiento mercado (+${(mercado*100).toFixed(1)}%)`, val: paso3 - paso2, tipo: mercado >= 0 ? 'up' : 'down' },
+    { label: `Tendencia del local (${(tendencia*100).toFixed(1)}%)`, val: paso4 - paso3, tipo: tendencia >= 0 ? 'up' : 'down' },
+    { label: `Factor estacional (${(estacional*100).toFixed(1)}%)`, val: paso5 - paso4, tipo: estacional >= 0 ? 'up' : 'down' },
+    { label: 'Meta sugerida final', val: sugerida, tipo: 'neutral', bold: true },
+  ];
+
+  document.getElementById('mc-desglose').innerHTML = desglose.map(d => `
+    <div class="factor-row" ${d.bold ? 'style="font-weight:700;border-top:2px solid var(--line);margin-top:4px;"' : ''}>
+      <span class="factor-name" ${d.bold ? 'style="color:var(--text);"' : ''}>${d.label}</span>
+      <span class="factor-val ${d.tipo}">${d.tipo === 'neutral' ? fmt(Math.abs(d.val)) : (d.val >= 0 ? '+' : '') + fmt(d.val)}</span>
+    </div>`).join('');
+}
+
+function setTend(v) {
+  document.getElementById('mc-tendencia').value = v;
+  document.getElementById('mc-tend-val').textContent = (v > 0 ? '+' : '') + v + '%';
+  calcMeta();
+}
+function setEst(v) {
+  document.getElementById('mc-estacional').value = v;
+  document.getElementById('mc-est-val').textContent = (v > 0 ? '+' : '') + v + '%';
+  calcMeta();
+}
+
+async function guardarMetaCalculada() {
+  if (mcResult === 0) { alert('Primero calcula una meta.'); return; }
+  const cid = document.getElementById('mc-cli').value;
+  const tiendaId = document.getElementById('mc-tienda').value;
+  const mes = parseInt(document.getElementById('mc-mes').value);
+  const anio = new Date().getFullYear() + 1; // Meta para año siguiente por defecto
+
+  show('mc-save-load');
+  let r;
+  if (tiendaId) {
+    r = await ap('saveMesTienda', { tienda_id: tiendaId, cliente_id: cid, anio, mes, ventas: 0, meta: mcResult, costo_real: 0 });
+  } else {
+    r = await ap('saveMes', { cliente_id: cid, anio, mes, ventas: 0, meta: mcResult, promotores: 0, costo_real: 0 });
+  }
+  hide('mc-save-load');
+  if (r.ok) {
+    delete cache['m_' + cid + '_' + anio];
+    delete cache['mt_' + cid + '_' + anio];
+    const ok = document.getElementById('mc-save-ok');
+    ok.style.display = 'block'; setTimeout(() => ok.style.display = 'none', 3000);
+  }
+}
+
+</script>
+</body>
+</html>
